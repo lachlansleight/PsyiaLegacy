@@ -37,6 +37,12 @@ public class PsyiaSettings {
 	public static int Antialiasing;
 	public static bool Bloom;
 
+	//MeditationSettings
+	public static int MeditationPosture;
+
+	//App Settings
+	public static bool FirstTime;
+
 	public static void SavePreset(int slot) {
 		string newName = "Preset_Slot_" + slot + ".psy";
 
@@ -48,7 +54,9 @@ public class PsyiaSettings {
 	}
 
 	public static void LoadPreset(string presetName) {
-		System.IO.FileInfo[] fileList = new System.IO.DirectoryInfo(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "/Psyia/Presets/").GetFiles();
+		string pathBase = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "/Psyia/Presets/";
+
+		System.IO.FileInfo[] fileList = new System.IO.DirectoryInfo(pathBase).GetFiles();
 		int foundInt = -1;
 		for(int i = 0; i < fileList.Length; i++) {
 			if(fileList[i].Name.Equals(presetName)) {
@@ -60,12 +68,11 @@ public class PsyiaSettings {
 		if(foundInt == -1) {
 			Debug.LogError("Error - didn't find preset with name " + presetName);
 		} else {
-			System.IO.FileStream stream = new System.IO.FileStream(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments) + "/Psyia/Presets/" + presetName, System.IO.FileMode.Open);
+			System.IO.FileStream stream = new System.IO.FileStream(pathBase + presetName, System.IO.FileMode.Open);
 			System.Runtime.Serialization.Formatters.Binary.BinaryFormatter bf = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
 			PsyiaSettingsInstance newInstance = (PsyiaSettingsInstance)bf.Deserialize(stream);
 			stream.Close();
 			LoadFromInstance(newInstance);
-
 		}
 	}
 
@@ -99,6 +106,10 @@ public class PsyiaSettings {
 		newInstance.Antialiasing = Antialiasing;
 		newInstance.Bloom = Bloom;
 
+		newInstance.MeditationPosture = MeditationPosture;
+
+		newInstance.FirstTime = FirstTime;
+
 		return newInstance;
 	}
 
@@ -130,6 +141,10 @@ public class PsyiaSettings {
 		ParticleCount = newInstance.ParticleCount;
 		Antialiasing = newInstance.Antialiasing;
 		Bloom = newInstance.Bloom;
+
+		MeditationPosture = newInstance.MeditationPosture;
+
+		FirstTime = newInstance.FirstTime;
 	}
 }
 
@@ -167,4 +182,10 @@ public class PsyiaSettingsInstance {
 	public int ParticleCount;
 	public int Antialiasing;
 	public bool Bloom;
+
+	//MeditationSettings
+	public int MeditationPosture;
+
+	//App Settings
+	public bool FirstTime;
 }

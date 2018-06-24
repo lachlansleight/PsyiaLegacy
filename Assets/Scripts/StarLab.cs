@@ -4,13 +4,12 @@ using System.Collections.Generic;
 using VRTools;
 
 public struct StarData {
-	public Vector3 position;
-	public Vector3 velocity;
-	public Vector3 scale;
-	public Color color;
+	public Vector4 position;
+	public Vector4 velocity;
+	public Vector4 scale;
+	public Vector4 color;
     public Vector4 randomSeed;
 	public Vector4 anchor;
-	public float age;
 }
 
 public struct KernelData {
@@ -98,6 +97,10 @@ public class StarLab : MonoBehaviour {
 	
 	int count = 50000;
 
+	public bool rendering = false;
+
+	float sceneStartTime = 0;
+
 	public void Reset() {
 		Deactivate();
 
@@ -125,6 +128,8 @@ public class StarLab : MonoBehaviour {
 		InitialiseBuffers();
 		FillBuffers();
 		active = true;
+
+		sceneStartTime = Time.time;
 
 		compute.SetInt("customMode", 2);
 	}
@@ -173,7 +178,7 @@ public class StarLab : MonoBehaviour {
 		
 		floats.Add("timeScale", timeScale);
 		floats.Add("fps", 90f);
-		floats.Add("time", Time.time);
+		floats.Add("time", (Time.time - sceneStartTime));
 
 		floats.Add("vortexStrength", vortexStrength);
 		floats.Add("velocityDampening", 0.01f);
@@ -196,15 +201,7 @@ public class StarLab : MonoBehaviour {
     }
 
 	void InitialiseBuffers() {
-		int vector3Stride = sizeof(float) * 3;
-		int colorStride = sizeof(int) * 4;
-        int vector2Stride = sizeof(float) * 2;
-        int vector4Stride = sizeof(float) * 4;
-		int floatStride = sizeof(float);
-		stride = vector3Stride * 3 + colorStride + vector4Stride * 2 + floatStride;
-		if(stride % 16 != 0) {
-			Debug.LogWarning("Warning - RWStructuredBuffer size should be divisible by 16 bytes! Add " + ((stride % 16) / 4) + " padding floats to improve performance!");
-		}
+		stride = sizeof(float) * 4 * 6;
 		/* 
 		
 		//don't think I need this
@@ -240,20 +237,21 @@ public class StarLab : MonoBehaviour {
 
 			float posRot = Random.Range(0f, Mathf.PI * 2f);
 			float posRad = Random.Range(0f, 3f);
-			float posHeight = Random.Range(2f, 4f);
+			float posHeight = Random.Range(0f, 4f);
 			Vector3 pos = new Vector3(posRad * Mathf.Cos(posRot), posHeight, posRad * Mathf.Sin(posRot));//new Vector3(0f, 1.2f, 0f) + Random.insideUnitSphere * 4.5f;
-			data[i].position = pos;
-			data[i].scale = vectors["shipSize"];
+			data[i].position = new Vector4(pos.x, pos.y, pos.z, 0);
+			data[i].scale = new Vector4(vectors["shipSize"].x, vectors["shipSize"].y, vectors["shipSize"].z, 0);
 			data[i].color = Color.Lerp(Color.cyan, Color.magenta, Random.Range(0f, 1f));
-			data[i].velocity = Vector3.zero;//-data[i].position * 0.0001f;
+			data[i].velocity = Vector4.zero;//-data[i].position * 0.0001f;
+
             Vector3 sphere = Random.insideUnitSphere;
             data[i].randomSeed = new Vector4(sphere.x, sphere.y, sphere.z, Random.Range(0f, 1f));
 			data[i].anchor = new Vector4(pos.x, pos.y, pos.z, 0);
 
-            spawnData[i].position = Vector3.zero;
-            spawnData[i].scale = vectors["shipSize"];
+            spawnData[i].position = new Vector4(0, 0, 0, 0);
+            spawnData[i].scale = new Vector4(vectors["shipSize"].x, vectors["shipSize"].y, vectors["shipSize"].z, 0);
             spawnData[i].color = Color.Lerp(Color.cyan, Color.magenta, Random.Range(0f, 1f));
-            spawnData[i].velocity = Vector3.zero;
+            spawnData[i].velocity = Vector4.zero;
             sphere = Random.insideUnitSphere;
             spawnData[i].randomSeed = new Vector4(sphere.x, sphere.y, sphere.z, Random.Range(0f, 1f));
 			spawnData[i].anchor = new Vector4(0,0,0, 0);
@@ -276,6 +274,8 @@ public class StarLab : MonoBehaviour {
 		for(int i = 0; i < kernels.Length; i++) compute.Dispatch(kernels[i].index, (int)kernels[i].x, (int)kernels[i].y, (int)kernels[i].z);
 		graphics[activeGraphic].SetPass(0);
 		Graphics.DrawProcedural(MeshTopology.Points, buffer.count);
+
+		rendering = true;
 	}
 
 	void UpdateFromSettings() {
@@ -375,10 +375,10 @@ public class StarLab : MonoBehaviour {
         floats["spawnRangeMin"] = spawnCenter - totalSpawnChance * 0.5f;
         floats["spawnRangeMax"] = spawnCenter + totalSpawnChance * 0.5f;
 
-		floats["time"] = Time.time;
+		floats["time"] = (Time.time - sceneStartTime);
 		floats["timeScale"] = timeScale;
 		//note - wait two seconds just in case there are hiccups on load
-		if(Time.time > 2f) floats["fps"] = StaticFPS.frameRate;
+		if((Time.time - sceneStartTime) > 2f) floats["fps"] = StaticFPS.frameRate;
 
 		ints["roomCollision"] = roomCollision ? 1 : 0;
 		ints["jellyMode"] = jellyMode ? 1 : 0;
@@ -412,19 +412,36 @@ public class StarLab : MonoBehaviour {
 		}
 
 		
-		if(audioData.avgVol == 0) {
+		if(audioData.avgVol < 0.0000001f) {
 			audioZeroTime += Time.deltaTime;
 		} else {
 			audioZeroTime = 0f;
 		}
 
-		noAudio = audioZeroTime > 5f;
+		noAudio = audioZeroTime > 2f;
+	}
+
+	public void Burst() {
+		StartCoroutine(burstOut());
 	}
 	public IEnumerator burstOut() {
+		StartCoroutine(FadeOutGrid());
 		compute.SetInt("customMode", 1);
 		yield return new WaitForEndOfFrame();
 		compute.SetInt("customMode", 0);
 		introFinished = true;
+	}
+
+	IEnumerator FadeOutGrid() {
+		GameObject grid = GameObject.Find("Grid");
+		if(grid == null) yield break;
+
+		Material gridMat = grid.GetComponent<Renderer>().material;
+		for(float i = 0; i < 1f; i += Time.deltaTime / 0.5f) {
+			gridMat.SetColor("_Color", new Color(1f, 1f, 1f, Mathf.Lerp(0.02f, 0f, i)));
+			yield return null;
+		}
+		grid.SetActive(false);
 	}
 
 	public IEnumerator suckIn() {

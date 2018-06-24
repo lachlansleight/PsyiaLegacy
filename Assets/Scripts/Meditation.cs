@@ -72,6 +72,12 @@ public class Meditation : MonoBehaviour {
 
 	int totalCrystalCount = 0;
 
+	public bool debug = false;
+	public int debugMode = 1;
+
+	public float menuTimer = 0;
+	public float maxMenuTimer = 2f;
+
 	public void Reset() {
 		Deactivate();
 
@@ -83,6 +89,9 @@ public class Meditation : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		
+		if(debug) PsyiaSettings.MeditationPosture = debugMode;
+
 		QualitySettings.antiAliasing = 4;
 
 		viveLeft = VRInput.GetDevice("ViveLeft");
@@ -100,6 +109,11 @@ public class Meditation : MonoBehaviour {
 		FillBuffers();
 		active = true;
 
+		if(debug) {
+			for(int i = 0; i < 19; i++) {
+				CreateCrystal();
+			}
+		}
 		StartCoroutine(CrystalSpawnRoutine());
 	}
 
@@ -157,10 +171,8 @@ public class Meditation : MonoBehaviour {
         int vector2Stride = sizeof(float) * 2;
         int vector4Stride = sizeof(float) * 4;
 		int floatStride = sizeof(float);
-		stride = vector3Stride * 3 + colorStride + vector4Stride * 2 + floatStride;
-		if(stride % 16 != 0) {
-			Debug.LogWarning("Warning - RWStructuredBuffer size should be divisible by 16 bytes! Add " + ((stride % 16) / 4) + " padding floats to improve performance!");
-		}
+		stride = sizeof(float) * 4 * 6;
+
 		/* 
 		
 		//don't think I need this
@@ -196,12 +208,12 @@ public class Meditation : MonoBehaviour {
 			float posRot = Random.Range(0f, Mathf.PI * 2f);
 			float posRad = Random.Range(0f, 3f);
 			float posHeight = Random.Range(0.01f, 0.1f);
-			Vector3 pos = new Vector3(posRad * Mathf.Cos(posRot), posHeight, posRad * Mathf.Sin(posRot));//new Vector3(0f, 1.2f, 0f) + Random.insideUnitSphere * 4.5f;
+			Vector3 pos = ChoosePosition();//new Vector3(posRad * Mathf.Cos(posRot), posHeight, posRad * Mathf.Sin(posRot));//new Vector3(0f, 1.2f, 0f) + Random.insideUnitSphere * 4.5f;
 			
-			data[i].position = pos;
+			data[i].position = new Vector4(pos.x, pos.y, pos.z, 0);
 			data[i].scale = new Vector4(1f, 1f, 1f, 1f);
 			data[i].color = Color.Lerp(Color.cyan, Color.magenta, Random.Range(0f, 1f));
-			data[i].velocity = -data[i].position * 0.0001f;
+			data[i].velocity = new Vector4(-data[i].position.x, -data[i].position.y, -data[i].position.z, 0) * 0.0001f;
             Vector3 sphere = Random.insideUnitSphere;
             data[i].randomSeed = new Vector4(sphere.x, sphere.y, sphere.z, Random.Range(0f, 1f));
 			data[i].anchor = new Vector4(Random.Range(1f - chargeVariability, 1f + chargeVariability), pos.y, pos.z, 0);
@@ -216,11 +228,18 @@ public class Meditation : MonoBehaviour {
 	}
 
 	void Update() {
-		if(VRInput.GetDevice("ViveLeft").GetButtonDown("Touchpad") || VRInput.GetDevice("ViveRight").GetButtonDown("Touchpad")) {
+		if(VRInput.GetDevice("ViveLeft").GetButtonDown("Trigger") || VRInput.GetDevice("ViveRight").GetButtonDown("Trigger")) {
 			colorMode = (colorMode + 1) % 5;
 		}
-		if((VRInput.GetDevice("ViveLeft").GetButtonDown("Menu") && VRInput.GetDevice("ViveRight").GetButton("Menu")) || (VRInput.GetDevice("ViveRight").GetButtonDown("Menu") && VRInput.GetDevice("ViveLeft").GetButton("Menu"))) {
-			UnityEngine.SceneManagement.SceneManager.LoadScene("Tutorial_And_Menu");
+		if(VRInput.GetDevice("ViveLeft").GetButton("Touchpad") && VRInput.GetDevice("ViveRight").GetButton("Touchpad")) {
+			menuTimer += Time.deltaTime;
+		} else {
+			menuTimer -= Time.deltaTime * 5f;
+			if(menuTimer < 0) menuTimer = 0;
+		}
+
+		if(menuTimer > maxMenuTimer) {
+			UnityEngine.SceneManagement.SceneManager.LoadScene("Menu");
 		}
 	}
 
@@ -298,20 +317,24 @@ public class Meditation : MonoBehaviour {
 			}
 		}
 
-		toneCounts[chosenTone]++;
+		
 
 		if(totalCrystalCount == 0) {
 			crystals[emptyIndex].growTime = 5f;
-			crystals[emptyIndex].Initialise(tones[chosenTone], new Vector3(0f, Random.Range(minHeight, maxHeight), 0.5f));
+			crystals[emptyIndex].Initialise(tones[0], new Vector3(0f, Random.Range(minHeight, maxHeight), 0.5f));
+
+			toneCounts[0]++;
 		}
 		else {
 
+			toneCounts[chosenTone]++;
+
 			//make sure we don't spawn too close
-			Vector3 chosenPosition = new Vector3(Random.Range(-2f, 2f), Random.Range(minHeight, maxHeight), Random.Range(-2f, 2f));
+			Vector3 chosenPosition = ChoosePosition();
 			bool allClear = false;
 			int attempts = 0;
 			while(!allClear) {
-				chosenPosition = new Vector3(Random.Range(-2f, 2f), Random.Range(minHeight, maxHeight), Random.Range(-2f, 2f));
+				chosenPosition = ChoosePosition();
 				float minDistance = float.MaxValue;
 				for(int i = 0; i < crystals.Length; i++) {
 					if(crystals[i] == null) continue;
@@ -334,6 +357,36 @@ public class Meditation : MonoBehaviour {
 		}
 
 		totalCrystalCount++;
+	}
+
+	Vector3 ChoosePosition() {
+		float chosenRadius = 0;
+		float chosenAngle = 0;
+		float chosenHeight = 0;
+		switch(PsyiaSettings.MeditationPosture) {
+		case 0: //stand
+			chosenRadius = Random.Range(0.4f, 2f);
+			chosenAngle = Random.Range(-1f, 1f) * Mathf.PI;
+			chosenHeight = Random.Range(0.3f, 2.5f);
+			break;
+		case 1: //chair sit
+			chosenRadius = Random.Range(0.4f, 4.756f);
+			chosenAngle = Random.Range(-1f, 1f) * Mathf.PI * (200f / 360f);
+			chosenHeight = Random.Range(0.3f, 2.5f);
+			break;
+		case 2: //floor sit
+			chosenRadius = Random.Range(0.4f, 4.756f);
+			chosenAngle = Random.Range(-1f, 1f) * Mathf.PI * (200f / 360f);
+			chosenHeight = Random.Range(0.3f, 1.75f);
+			break;
+		case 3: //lay
+			chosenRadius = Random.Range(0.4f, 4.756f);
+			chosenAngle = Random.Range(-1f, 1f) * Mathf.PI * (200f / 360f);
+			chosenHeight = Random.Range(0.75f, 2.5f);
+			break;
+		}
+
+		return new Vector3(chosenRadius * Mathf.Sin(chosenAngle), chosenHeight, chosenRadius * Mathf.Cos(chosenAngle));
 	}
 
 	void DeleteCrystal() {
