@@ -16,11 +16,13 @@
 float4 controllerPositionL;
 float4 controllerForwardL;
 float4 controllerVelocityL;
+float4 lastControllerPositionL;
 float controllerChargeL;
 
 float4 controllerPositionR;
 float4 controllerForwardR;
 float4 controllerVelocityR;
+float4 lastControllerPositionR;
 float controllerChargeR;
 
 //Audio input
@@ -73,7 +75,6 @@ struct StarData {
 };
 
 RWStructuredBuffer<StarData> outputBuffer;
-RWStructuredBuffer<StarData> spawnBuffer;
 
 [numthreads(32, 32, 1)]
 void Physics(uint3 id : SV_DispatchThreadID)
@@ -148,18 +149,18 @@ void Physics(uint3 id : SV_DispatchThreadID)
 		
 		//randomly choose between left or right, based on provided LR weighting
 		if (curCube.randomSeed.w < LRSpawnBalance) {
-			pos = controllerPositionL - controllerVelocityL * lerpFactor;
+			pos = lerp(lastControllerPositionL, controllerPositionL, lerpFactor);
 		}
 		else {
-			pos = controllerPositionR - controllerVelocityR * lerpFactor;
+			pos = lerp(lastControllerPositionR, controllerPositionR, lerpFactor);
 		}
 
 		//set spawn parameters
-		velocity = curCube.randomSeed.xyz * cubeSpawnVelocity;
-		scale = spawnBuffer[idx].scale;
-		curCube.color = spawnBuffer[idx].color;
+		curCube.velocity = float4(curCube.randomSeed.xyz * cubeSpawnVelocity, 0);
+		curCube.scale = float4(scale, 0);
+		curCube.color = float4(1, 1, 1, 0);
 		curCube.anchor = float4(pos, 0.0);
-		curCube.pos.w = 0;
+		curCube.pos = float4(pos, 0);
 
 		outputBuffer[idx] = curCube;
 	}

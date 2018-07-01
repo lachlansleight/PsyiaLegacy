@@ -28,7 +28,6 @@ public class StarIntro : MonoBehaviour {
 
 	//shader info
 	ComputeBuffer buffer;
-    ComputeBuffer spawnBuffer;
     int stride;
 	KernelData[] kernels;
 
@@ -118,16 +117,12 @@ public class StarIntro : MonoBehaviour {
 	void OnDestroy() {
 		buffer.Release();
 		buffer.Dispose();
-		spawnBuffer.Release();
-		spawnBuffer.Dispose();
 	}
 
 	public void Deactivate() {
 		active = false;
 		buffer.Release();
 		buffer.Dispose();
-        spawnBuffer.Release();
-        spawnBuffer.Dispose();
         ClearDictionaries();
 	}
 
@@ -197,14 +192,9 @@ public class StarIntro : MonoBehaviour {
 			buffer.Dispose();
 			buffer.Release();
 		}
-		if(spawnBuffer != null) {
-			spawnBuffer.Dispose();
-			spawnBuffer.Release();
-		}
 		*/
 
 		buffer = new ComputeBuffer(count, stride);
-        spawnBuffer = new ComputeBuffer(count, stride);
 
 		kernels = new KernelData[2];
 		kernels[0] = new KernelData();
@@ -257,11 +247,9 @@ public class StarIntro : MonoBehaviour {
 			spawnData[i].anchor = new Vector4(0,0,0, 0);
 		}
 		buffer.SetData(data);
-        spawnBuffer.SetData(spawnData);
 
 		for(int i = 0; i < kernels.Length; i++) {
             compute.SetBuffer(kernels[i].index, "outputBuffer", buffer);
-            compute.SetBuffer(kernels[i].index, "spawnBuffer", spawnBuffer);
         }
 		for(int i = 0; i < graphics.Length; i++) graphics[i].SetBuffer("inputBuffer", buffer);
 	}

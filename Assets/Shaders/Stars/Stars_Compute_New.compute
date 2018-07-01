@@ -70,7 +70,6 @@ struct StarData {
 };
 
 RWStructuredBuffer<StarData> outputBuffer;
-RWStructuredBuffer<StarData> spawnBuffer;
 
 float2 wrap(float2 input, float multiplier, int size) {
 	return float2((input.x * multiplier) % size, (input.y * multiplier) % size);
@@ -118,8 +117,7 @@ void Physics (uint3 id : SV_DispatchThreadID)
 
 		float cubeSpawnVelocity = 0.00001;
 		curCube.velocity = curCube.randomSeed.xyz * cubeSpawnVelocity;
-		curCube.scale = spawnBuffer[idx].scale;
-		curCube.color = spawnBuffer[idx].color;
+		curCube.color = float4(1, 1, 1, 0);
 
 		outputBuffer[idx] = curCube;
 	} else {
