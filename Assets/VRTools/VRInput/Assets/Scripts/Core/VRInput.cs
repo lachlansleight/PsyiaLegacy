@@ -77,17 +77,6 @@ namespace VRTools {
 			if(Devices.ContainsKey("ViveRight")) Devices.Remove("ViveRight");
 			Devices.Add("ViveRight", viveRight);
 		}
-
-		/// <summary>
-		/// Initialises an Xbox controller for traditional input
-		/// </summary>
-		public static void AddXbox() {
-			if(Devices == null) Devices = new Dictionary<string, VRInputDevice>();
-
-			XboxController xBox = new XboxController();
-			if(Devices.ContainsKey("Xbox")) Devices.Remove("Xbox");
-			Devices.Add("Xbox", xBox);
-		}
 	}
 
 }
