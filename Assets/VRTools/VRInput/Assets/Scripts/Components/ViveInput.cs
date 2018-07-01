@@ -54,7 +54,7 @@ namespace VRTools {
 			#else
 			//we don't need to reference the vive tracked object here because we have it from the native unity implementation
 				if(hmd == null) {
-					if(transform.FindChild("Camera (eye)") != null) hmd = transform.FindChild("Camera (eye)");
+					if(transform.Find("Camera (eye)") != null) hmd = transform.Find("Camera (eye)");
 					if(hmd == null) {
 						hmd = GameObject.Find("Camera (eye)").transform;
 						if(hmd == null) {
@@ -64,7 +64,7 @@ namespace VRTools {
 				}
 			#endif
 			if(Left == null) {
-				if(transform.FindChild("Controller (left)") != null) Left = transform.FindChild("Controller (left)").GetComponent<SteamVR_TrackedObject>();
+				if(transform.Find("Controller (left)") != null) Left = transform.Find("Controller (left)").GetComponent<SteamVR_TrackedObject>();
 				if(Left == null) {
 					Left = GameObject.Find("Controller (left)").GetComponent<SteamVR_TrackedObject>();
 					if(Left == null) {
@@ -73,7 +73,7 @@ namespace VRTools {
 				}
 			}
 			if(Right == null) {
-				if(transform.FindChild("Controller (right)") != null) Right = transform.FindChild("Controller (right)").GetComponent<SteamVR_TrackedObject>();
+				if(transform.Find("Controller (right)") != null) Right = transform.Find("Controller (right)").GetComponent<SteamVR_TrackedObject>();
 				if(Right == null) {
 					Right = GameObject.Find("Controller (right)").GetComponent<SteamVR_TrackedObject>();
 					if(Right == null) {
@@ -299,7 +299,7 @@ namespace VRTools {
 				//ViveInput.HMD.IsTracked = false;
 			}
 			#else
-			if(VRDevice.isPresent) {
+			if(UnityEngine.XR.XRDevice.isPresent) {
 				VRInputDevice tempDevice = VRInput.GetDevice("ViveHMD");
 
 				tempDevice.isTracked = true;
@@ -317,18 +317,18 @@ namespace VRTools {
 				lastPosition = hmd.position;
 				lastRotation = hmd.rotation;
 
-				tempDevice.SetString("Model", VRDevice.model);
-				tempDevice.SetFloat("RefreshRate", VRDevice.refreshRate);
+				tempDevice.SetString("Model", UnityEngine.XR.XRDevice.model);
+				tempDevice.SetFloat("RefreshRate", UnityEngine.XR.XRDevice.refreshRate);
 
-				tempDevice.SetVector3("Head", InputTracking.GetLocalPosition(VRNode.Head));
-				tempDevice.SetVector3("LeftEye", InputTracking.GetLocalPosition(VRNode.LeftEye));
-				tempDevice.SetVector3("RightEye", InputTracking.GetLocalPosition(VRNode.RightEye));
-				tempDevice.SetVector3("CenterEye", InputTracking.GetLocalPosition(VRNode.CenterEye));
+				tempDevice.SetVector3("Head", UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.Head));
+				tempDevice.SetVector3("LeftEye", UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.LeftEye));
+				tempDevice.SetVector3("RightEye", UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.RightEye));
+				tempDevice.SetVector3("CenterEye", UnityEngine.XR.InputTracking.GetLocalPosition(UnityEngine.XR.XRNode.CenterEye));
 
-				tempDevice.SetQuaternion("Head", InputTracking.GetLocalRotation(VRNode.Head));
-				tempDevice.SetQuaternion("LeftEye", InputTracking.GetLocalRotation(VRNode.LeftEye));
-				tempDevice.SetQuaternion("RightEye", InputTracking.GetLocalRotation(VRNode.RightEye));
-				tempDevice.SetQuaternion("CenterEye", InputTracking.GetLocalRotation(VRNode.CenterEye));
+				tempDevice.SetQuaternion("Head", UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.Head));
+				tempDevice.SetQuaternion("LeftEye", UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.LeftEye));
+				tempDevice.SetQuaternion("RightEye", UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.RightEye));
+				tempDevice.SetQuaternion("CenterEye", UnityEngine.XR.InputTracking.GetLocalRotation(UnityEngine.XR.XRNode.CenterEye));
 
 			} else {
 				VRInput.GetDevice("ViveHMD").isTracked = false;

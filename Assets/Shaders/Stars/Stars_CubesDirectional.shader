@@ -160,12 +160,15 @@ Shader "Geometry/CubesDirectional"
 					}
 
 				} else {
-					for (i=0;i<TAM;i++) { v[i].pos = vert[0].pos + vc[i]; v[i].col = vert[0].col * _Color;	}
+					for (i=0;i<TAM;i++) { 
+						v[i].pos = vert[0].pos + vc[i]; 
+						v[i].col = vert[0].col * _Color;
+					}
 				}
 				
 				
 				// Position in view space
-				for (i=0;i<TAM;i++) { v[i].pos = UnityObjectToClipPos(v[i].pos); }
+				for (i=0;i<TAM;i++) { v[i].pos = UnityObjectToClipPos(v[i].pos * 0.5); }
 					
 				// Build the cube tile by submitting triangle strip vertices
 				for (i=0;i<TAM/3;i++)

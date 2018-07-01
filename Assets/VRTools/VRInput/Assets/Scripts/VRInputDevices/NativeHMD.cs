@@ -128,7 +128,7 @@ namespace VRTools {
 		}
 
 		public override void Recenter() {
-			InputTracking.Recenter();
+			UnityEngine.XR.InputTracking.Recenter();
 		}
 	}
 
