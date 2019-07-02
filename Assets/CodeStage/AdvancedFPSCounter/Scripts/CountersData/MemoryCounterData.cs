@@ -298,7 +298,7 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 
 			if (total)
 			{
-				uint value = Profiler.GetTotalReservedMemory();
+				uint value = UnityEngine.Profiling.Profiler.GetTotalReservedMemory();
 				uint divisionResult = 0;
 
 				bool newValue;
@@ -321,7 +321,7 @@ namespace CodeStage.AdvancedFPSCounter.CountersData
 
 			if (allocated)
 			{
-				uint value = Profiler.GetTotalAllocatedMemory();
+				uint value = UnityEngine.Profiling.Profiler.GetTotalAllocatedMemory();
 				uint divisionResult = 0;
 
 				bool newValue;

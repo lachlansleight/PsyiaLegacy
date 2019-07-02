@@ -75,7 +75,6 @@ struct StarData {
 };
 
 RWStructuredBuffer<StarData> outputBuffer;
-RWStructuredBuffer<StarData> spawnBuffer;
 
 [numthreads(32, 32, 1)]
 void Physics(uint3 id : SV_DispatchThreadID)

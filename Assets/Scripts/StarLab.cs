@@ -42,7 +42,6 @@ public class StarLab : MonoBehaviour {
 
 	//shader info
 	ComputeBuffer buffer;
-    ComputeBuffer spawnBuffer;
     int stride;
 	KernelData[] kernels;
 
@@ -137,16 +136,12 @@ public class StarLab : MonoBehaviour {
 	void OnDestroy() {
 		buffer.Release();
 		buffer.Dispose();
-		spawnBuffer.Release();
-		spawnBuffer.Dispose();
 	}
 
 	public void Deactivate() {
 		active = false;
 		buffer.Release();
 		buffer.Dispose();
-        spawnBuffer.Release();
-        spawnBuffer.Dispose();
         ClearDictionaries();
 	}
 
@@ -166,11 +161,13 @@ public class StarLab : MonoBehaviour {
 		vectors.Add("controllerPositionL", Vector4.zero);
 		vectors.Add("controllerForwardL", Vector4.zero);
 		vectors.Add("controllerVelocityL", Vector4.zero);
+		vectors.Add("lastControllerPositionL", Vector4.zero);
 		floats.Add("controllerChargeL", 0f);
 
 		vectors.Add("controllerPositionR", Vector4.zero);
 		vectors.Add("controllerForwardR", Vector4.zero);
 		vectors.Add("controllerVelocityR", Vector4.zero);
+		vectors.Add("lastControllerPositionR", Vector4.zero);
 		floats.Add("controllerChargeR", 0f);
 
 		vectors.Add("roomSize", roomSize);
@@ -209,14 +206,9 @@ public class StarLab : MonoBehaviour {
 			buffer.Dispose();
 			buffer.Release();
 		}
-		if(spawnBuffer != null) {
-			spawnBuffer.Dispose();
-			spawnBuffer.Release();
-		}
 		*/
 
 		buffer = new ComputeBuffer(count, stride);
-        spawnBuffer = new ComputeBuffer(count, stride);
 
 		kernels = new KernelData[2];
 		kernels[0] = new KernelData();
@@ -257,11 +249,9 @@ public class StarLab : MonoBehaviour {
 			spawnData[i].anchor = new Vector4(0,0,0, 0);
 		}
 		buffer.SetData(data);
-        spawnBuffer.SetData(spawnData);
 
 		for(int i = 0; i < kernels.Length; i++) {
             compute.SetBuffer(kernels[i].index, "outputBuffer", buffer);
-            compute.SetBuffer(kernels[i].index, "spawnBuffer", spawnBuffer);
         }
 		for(int i = 0; i < graphics.Length; i++) graphics[i].SetBuffer("inputBuffer", buffer);
 	}
@@ -314,6 +304,8 @@ public class StarLab : MonoBehaviour {
 		vectors["controllerForwardR"] = rightController.forward;
 		vectors["controllerVelocityL"] = (leftController.position - lastLeftPos);
 		vectors["controllerVelocityR"] = (rightController.position - lastRightPos);
+		vectors["lastControllerPositionL"] = lastLeftPos;
+		vectors["lastControllerPositionR"] = lastRightPos;
 
 		lastLeftPos = leftController.position;
 		lastRightPos = rightController.position;

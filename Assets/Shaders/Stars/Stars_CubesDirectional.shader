@@ -1,4 +1,6 @@
-﻿// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+// Upgrade NOTE: replaced '_World2Object' with 'unity_WorldToObject'
 
 Shader "Geometry/CubesDirectional" 
  {		
@@ -158,12 +160,15 @@ Shader "Geometry/CubesDirectional"
 					}
 
 				} else {
-					for (i=0;i<TAM;i++) { v[i].pos = vert[0].pos + vc[i]; v[i].col = vert[0].col * _Color;	}
+					for (i=0;i<TAM;i++) { 
+						v[i].pos = vert[0].pos + vc[i]; 
+						v[i].col = vert[0].col * _Color;
+					}
 				}
 				
 				
 				// Position in view space
-				for (i=0;i<TAM;i++) { v[i].pos = mul(UNITY_MATRIX_MVP, v[i].pos); }
+				for (i=0;i<TAM;i++) { v[i].pos = UnityObjectToClipPos(v[i].pos * 0.5); }
 					
 				// Build the cube tile by submitting triangle strip vertices
 				for (i=0;i<TAM/3;i++)

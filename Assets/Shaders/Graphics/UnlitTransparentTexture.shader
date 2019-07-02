@@ -1,4 +1,6 @@
-﻿Shader "Custom/UnlitTransparentTexture" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "Custom/UnlitTransparentTexture" {
 	Properties {
 		_MainTex ("Main Texture", 2D) = "white" {}
 		_Color ("Main Color", Color) = (1, 1, 1, 1)
@@ -28,7 +30,7 @@
 	        
 	        v2f vert(vIn input) {
 	        	v2f output;
-	        	output.pos = mul(UNITY_MATRIX_MVP, input.vertex);
+	        	output.pos = UnityObjectToClipPos(input.vertex);
 	        	output.uv = input.texcoord;
 	        	return output;
 	        }

@@ -180,10 +180,6 @@ public class Meditation : MonoBehaviour {
 			meditationBuffer.Dispose();
 			meditationBuffer.Release();
 		}
-		if(spawnBuffer != null) {
-			spawnmeditationBuffer.Dispose();
-			spawnmeditationBuffer.Release();
-		}
 		*/
 		meditationBuffer = new ComputeBuffer(count, stride);
 		Debug.Log("Created buffer with " + meditationBuffer.count + ", " + meditationBuffer.stride);

@@ -26,7 +26,7 @@ public class ScreenshotCreator : MonoBehaviour {
 		
 
 		if(Input.GetKeyDown(KeyCode.S)) {
-			Application.CaptureScreenshot(directory + getTimeString() + ".png", superSample);
+			ScreenCapture.CaptureScreenshot(directory + getTimeString() + ".png", superSample);
 			Debug.Log("Saved screenshot at " + directory + getTimeString() + ".png" );
 		}
 		if(Input.GetKeyDown(KeyCode.C)) {

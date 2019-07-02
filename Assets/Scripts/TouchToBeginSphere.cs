@@ -6,7 +6,7 @@ public class TouchToBeginSphere : MonoBehaviour {
 	bool triggered = false;
 	public StarLab starLab;
 	public GameObject touchToBeginCanvas;
-	public Renderer touchToBeginRenderer;
+	public CanvasGroup touchToBeginRenderer;
 	public float waitTime = 2f;
 	public float growTime = 5.5f;
 	public bool tutorialScene = false;
@@ -63,7 +63,7 @@ public class TouchToBeginSphere : MonoBehaviour {
 		touchToBeginCanvas.SetActive(true);
 
 		for(float i = 0; i < 1f; i += Time.deltaTime / 0.5f) {
-			touchToBeginRenderer.sharedMaterial.SetColor("_Color", Color.Lerp(new Color(1f, 1f, 1f, 0f), Color.white, i));
+			touchToBeginRenderer.alpha = Mathf.Lerp(0f, 1f, i);
 			yield return null;
 		}
 	}
