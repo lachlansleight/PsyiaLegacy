@@ -4,7 +4,7 @@
 Material:
   serializedVersion: 6
   m_ObjectHideFlags: 0
-  m_PrefabParentObject: {fileID: 0}
+  m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_Name: Stars_Cubes
   m_Shader: {fileID: 4800000, guid: 792834b46cd84444cb79a13a34a13a3d, type: 3}
